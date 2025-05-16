@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import JobScheduling from './pages/JobScheduling';
+import JobSchedulingSimulator from './pages/JobSchedulingSimulator';
+
 import './styles/scrollbar.css';
 
 function App() {
@@ -17,6 +19,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/job-scheduling" element={<JobScheduling />} />
+            <Route path="/jobSchedulingSimulator" element={<JobSchedulingSimulator />} />
           </Routes>
         </main>
         <Footer />
