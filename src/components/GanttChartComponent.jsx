@@ -1,10 +1,10 @@
 const GanttChartComponent = ({ schedule }) => {
   if (!schedule || schedule.length === 0) return null;
 
-  // Define consistent colors
-  const colors = {
+  // Define static base colors for the first 8 processes
+  const baseColors = {
     idle: '#E5E7EB', // Light gray
-    contextSwitch: '#9CA3AF', // Dark gray
+    cs: '#9CA3AF',   // Dark gray for context switch
     processes: {
       1: 'hsl(210, 70%, 60%)', // Blue
       2: 'hsl(120, 70%, 60%)', // Green
@@ -13,39 +13,28 @@ const GanttChartComponent = ({ schedule }) => {
       5: 'hsl(180, 70%, 60%)', // Teal
       6: 'hsl(330, 70%, 60%)', // Pink
       7: 'hsl(60, 70%, 60%)',  // Yellow
-      8: 'hsl(270, 70%, 60%)', // Indigo
+      8: 'hsl(270, 70%, 60%)'  // Indigo
     }
   };
 
-  
-  // Group same PID blocks, add context switch
-  const groupedSchedule = schedule.reduce((acc, step, index) => {
-    if (index === 0) {
-      acc.push({ ...step, count: 1, isContextSwitch: false });
-      return acc;
+  // Assign dynamic colors to any process ID not already defined
+  const getColorForPid = (pid) => {
+    if (!baseColors.processes[pid]) {
+      const hue = (parseInt(pid) * 47) % 360;
+      baseColors.processes[pid] = `hsl(${hue}, 70%, 60%)`;
     }
+    return baseColors.processes[pid];
+  };
 
-    const prevStep = acc[acc.length - 1];
-    const isContextSwitch = step.runningPID !== prevStep.runningPID &&
-                            step.runningPID !== null &&
-                            prevStep.runningPID !== null;
-
-    if (step.runningPID === prevStep.runningPID && !isContextSwitch) {
-      prevStep.count++;
+  // Group consecutive states
+  const groupedSchedule = [];
+  schedule.forEach((state, index) => {
+    if (index === 0 || state !== schedule[index - 1]) {
+      groupedSchedule.push({ state, start: index, count: 1 });
     } else {
-      if (isContextSwitch) {
-        acc.push({
-          runningPID: null,
-          count: 1,
-          time: step.time - 1,
-          isContextSwitch: true
-        });
-      }
-      acc.push({ ...step, count: 1, isContextSwitch: false });
+      groupedSchedule[groupedSchedule.length - 1].count++;
     }
-
-    return acc;
-  }, []);
+  });
 
   return (
     <div className="space-y-4">
@@ -54,11 +43,11 @@ const GanttChartComponent = ({ schedule }) => {
       {/* Legend */}
       <div className="flex justify-center space-x-4 mb-2">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: colors.idle }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: baseColors.idle }} />
           <span className="text-sm">Idle</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: colors.contextSwitch }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: baseColors.cs }} />
           <span className="text-sm">Context Switch</span>
         </div>
       </div>
@@ -67,14 +56,15 @@ const GanttChartComponent = ({ schedule }) => {
       <div className="border rounded bg-white shadow-sm" style={{ width: '100%', maxWidth: '100%' }}>
         <div className="overflow-x-auto gantt-scrollbar" style={{ width: '100%' }}>
           <div style={{ minWidth: 'max-content' }}>
+            
             {/* Bars */}
             <div className="flex">
-              {groupedSchedule.map((step, index) => {
-                const color = step.isContextSwitch
-                  ? colors.contextSwitch
-                  : step.runningPID
-                    ? colors.processes[step.runningPID] || colors.processes[1]
-                    : colors.idle;
+              {groupedSchedule.map((group, index) => {
+                const color = group.state === 'idle'
+                  ? baseColors.idle
+                  : group.state === 'cs'
+                    ? baseColors.cs
+                    : getColorForPid(group.state.slice(1));
 
                 return (
                   <div
@@ -82,36 +72,41 @@ const GanttChartComponent = ({ schedule }) => {
                     className="flex items-center justify-center border text-sm"
                     style={{
                       backgroundColor: color,
-                      width: `${step.count * 32}px`,
+                      width: `${group.count * 32}px`,
                       height: '48px',
                       flexShrink: 0
                     }}
                   >
-                    {step.isContextSwitch
+                    {group.state === 'cs'
                       ? 'CS'
-                      : step.runningPID
-                        ? `P${step.runningPID}`
-                        : 'IDLE'}
+                      : group.state === 'idle'
+                        ? 'IDLE'
+                        : group.state.toUpperCase()}
                   </div>
                 );
               })}
             </div>
 
-            {/* Time Labels */}
+            {/* Time Labels (at bar boundaries) */}
             <div className="flex">
-              {schedule.map((step, index) => (
+              {groupedSchedule.map((group, index) => (
                 <div
                   key={index}
-                  className="text-xs text-gray-600 text-center"
-                  style={{ 
-                    width: '32px',
+                  className="text-xs text-gray-600 text-left"
+                  style={{
+                    width: `${group.count * 32}px`,
                     flexShrink: 0
                   }}
                 >
-                  {step.time}
+                  <div className="pl-1">{group.start}</div>
                 </div>
               ))}
+              {/* Add the last time tick */}
+              <div className="text-xs text-gray-600 text-left" style={{ width: '32px' }}>
+                {schedule.length}
+              </div>
             </div>
+
           </div>
         </div>
       </div>

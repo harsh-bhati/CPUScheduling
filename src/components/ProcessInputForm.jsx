@@ -1,24 +1,38 @@
-// src/components/ProcessInputForm.jsx
+/**
+ * ProcessInputForm
+ * 
+ * This component provides a form for users to:
+ * - Select a scheduling algorithm
+ * - Configure algorithm parameters (time quantum, context switch time)
+ * - Add/remove processes
+ * - Set process properties (arrival time, burst time, priority)
+ * 
+ * The form includes validation and error handling for process inputs.
+ */
+
 import { useState } from 'react';
 
+// Available scheduling algorithms with their properties
 const algorithms = [
   { id: 'fcfs', name: 'First Come First Serve (FCFS)', preemptive: false },
   { id: 'sjf', name: 'Shortest Job First (SJF)', preemptive: false },
   { id: 'srtf', name: 'Shortest Remaining Time First (SRTF)', preemptive: true },
-  { id: 'lrtf', name: 'Longest Remaining Time First (LRTF)', preemptive: true },
   { id: 'rr', name: 'Round Robin (RR)', preemptive: true },
   { id: 'priority', name: 'Priority Scheduling', preemptive: false },
   { id: 'priority-preemptive', name: 'Priority Scheduling (Preemptive)', preemptive: true }
 ];
 
 const ProcessInputForm = ({ onSubmit, onClear }) => {
+  // State management for form inputs
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('fcfs');
   const [timeQuantum, setTimeQuantum] = useState(2);
   const [contextSwitchTime, setContextSwitchTime] = useState(0.0);
   const [processes, setProcesses] = useState([
-    { pid: 1, arrivalTime: 0, burstTime: 4, priority: 1 }
+    { pid: 1, arrivalTime: 0, burstTime: 1, priority: 1 }
   ]);
+  const [errors, setErrors] = useState([{}]);
 
+  // Add a new process to the list
   const handleAddProcess = () => {
     setProcesses([
       ...processes,
@@ -29,51 +43,75 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
         priority: 1
       }
     ]);
+    setErrors([...errors, {}]);
   };
 
+  // Remove a process from the list
   const handleRemoveProcess = (index) => {
-    setProcesses(processes.filter((_, i) => i !== index));
+    const updatedProcesses = processes.filter((_, i) => i !== index);
+    const updatedErrors = errors.filter((_, i) => i !== index);
+    setProcesses(updatedProcesses);
+    setErrors(updatedErrors);
   };
 
+  // Update process properties
   const handleProcessChange = (index, field, value) => {
     const newProcesses = [...processes];
-    let parsedValue = parseInt(value) || 0;
-
-    // Apply validation rules
-    if (field === 'arrivalTime') {
-      parsedValue = Math.max(0, parsedValue); // Cannot be negative
-    } else if (field === 'burstTime') {
-      parsedValue = Math.max(1, parsedValue); // Must be at least 1
-    } else if (field === 'priority') {
-      parsedValue = Math.max(1, parsedValue); // Priority must be at least 1
-    }
-
     newProcesses[index] = {
       ...newProcesses[index],
-      [field]: parsedValue
+      [field]: value
     };
     setProcesses(newProcesses);
   };
 
+  // Validate process inputs
+  const validateProcesses = () => {
+    const newErrors = processes.map(p => {
+      const err = {};
+      if (p.arrivalTime === '' || parseInt(p.arrivalTime) < 0) err.arrivalTime = 'Arrival time must be ≥ 0';
+      if (p.burstTime === '' || parseInt(p.burstTime) < 1) err.burstTime = 'Burst time must be ≥ 1';
+      if (selectedAlgorithm.includes('priority') && (p.priority === '' || parseInt(p.priority) < 1)) {
+        err.priority = 'Priority must be ≥ 1';
+      }
+      return err;
+    });
+    setErrors(newErrors);
+    return newErrors.every(err => Object.keys(err).length === 0);
+  };
+
+  // Reset form to initial state
   const handleClear = () => {
     setProcesses([{ pid: 1, arrivalTime: 0, burstTime: 1, priority: 1 }]);
+    setErrors([{}]);
     setSelectedAlgorithm('fcfs');
     setTimeQuantum(2);
     setContextSwitchTime(0.0);
     onClear();
   };
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (processes.length === 0) return;
-    onSubmit(processes, selectedAlgorithm, timeQuantum, contextSwitchTime);
+    if (!validateProcesses()) return;
+
+    // Convert values to numbers before submission
+    const sanitizedProcesses = processes.map(p => ({
+      pid: p.pid,
+      arrivalTime: parseInt(p.arrivalTime),
+      burstTime: parseInt(p.burstTime),
+      priority: parseInt(p.priority)
+    }));
+
+    onSubmit(sanitizedProcesses, selectedAlgorithm, timeQuantum, contextSwitchTime);
   };
 
+  // Determine which fields to show based on selected algorithm
   const showPriorityField = selectedAlgorithm.includes('priority');
   const showTimeQuantumField = selectedAlgorithm === 'rr';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Algorithm selection and parameters */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Algorithm</label>
@@ -90,7 +128,8 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
           </select>
         </div>
 
-        {selectedAlgorithm === 'rr' && (
+        {/* Time quantum input for Round Robin */}
+        {showTimeQuantumField && (
           <div>
             <label className="block text-sm font-medium text-gray-700">Time Quantum</label>
             <input
@@ -103,6 +142,7 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
           </div>
         )}
 
+        {/* Context switch time input */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Context Switch Time</label>
           <input
@@ -116,6 +156,7 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
         </div>
       </div>
 
+      {/* Process list management */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Processes</h3>
@@ -137,6 +178,7 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
           </div>
         </div>
 
+        {/* Process table */}
         <div className="overflow-x-auto">
           <table className="min-w-full border">
             <thead>
@@ -151,15 +193,19 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
             <tbody>
               {processes.map((process, index) => (
                 <tr key={index}>
-                  <td className="p-2 border">{process.pid}</td>
+                  <td className="p-2 border text-center">{process.pid}</td>
                   <td className="p-2 border">
                     <input
                       type="number"
                       min="0"
                       value={process.arrivalTime}
                       onChange={(e) => handleProcessChange(index, 'arrivalTime', e.target.value)}
+                      onBlur={validateProcesses}
                       className="w-20 p-1 border rounded"
                     />
+                    {errors[index]?.arrivalTime && (
+                      <p className="text-red-500 text-xs">{errors[index].arrivalTime}</p>
+                    )}
                   </td>
                   <td className="p-2 border">
                     <input
@@ -167,8 +213,12 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
                       min="1"
                       value={process.burstTime}
                       onChange={(e) => handleProcessChange(index, 'burstTime', e.target.value)}
+                      onBlur={validateProcesses}
                       className="w-20 p-1 border rounded"
                     />
+                    {errors[index]?.burstTime && (
+                      <p className="text-red-500 text-xs">{errors[index].burstTime}</p>
+                    )}
                   </td>
                   {showPriorityField && (
                     <td className="p-2 border">
@@ -177,11 +227,15 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
                         min="1"
                         value={process.priority}
                         onChange={(e) => handleProcessChange(index, 'priority', e.target.value)}
+                        onBlur={validateProcesses}
                         className="w-20 p-1 border rounded"
                       />
+                      {errors[index]?.priority && (
+                        <p className="text-red-500 text-xs">{errors[index].priority}</p>
+                      )}
                     </td>
                   )}
-                  <td className="p-2 border">
+                  <td className="p-2 border text-center">
                     <button
                       type="button"
                       onClick={() => handleRemoveProcess(index)}
@@ -198,6 +252,7 @@ const ProcessInputForm = ({ onSubmit, onClear }) => {
         </div>
       </div>
 
+      {/* Submit button */}
       <div className="flex justify-center">
         <button
           type="submit"

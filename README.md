@@ -1,16 +1,125 @@
-# React + Vite
+# AlgoTracer - Operating System Algorithm Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AlgoTracer is an interactive web application built with React and Vite that visualizes various Operating System algorithms. The application provides a user-friendly interface to understand and experiment with different scheduling algorithms through real-time visualization.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Interactive visualization of job scheduling algorithms
+- Real-time process execution display
+- Gantt chart visualization
+- Performance metrics calculation
+- Adjustable simulation speed
+- Pause/Resume functionality
+- Support for multiple scheduling algorithms
 
-## Expanding the ESLint configuration
+## Supported Algorithms
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Job Scheduling
+- First Come First Serve (FCFS)
+- Shortest Job First (SJF)
+- Shortest Remaining Time First (SRTF)
+- Longest Remaining Time First (LRTF)
+- Round Robin (RR)
+- Priority Scheduling (Non-preemptive)
+- Priority Scheduling (Preemptive)
 
-git add . 
-git commit -m "initial" 
-git push origin main    
+## Project Structure
+
+```
+src/
+├── algorithms/
+│   └── scheduling.js      # Implementation of scheduling algorithms
+├── components/
+│   ├── GanttChartComponent.jsx    # Gantt chart visualization
+│   ├── LiveExecutionComponent.jsx # Real-time process execution display
+│   ├── ProcessInputForm.jsx       # Process input and algorithm selection
+│   ├── ResultsComponent.jsx       # Performance metrics display
+│   └── SchedulerControls.jsx      # Simulation speed controls
+├── pages/
+│   ├── Home.jsx           # Main landing page
+│   ├── JobScheduling.jsx  # Job scheduling visualization page
+│   └── About.jsx          # About page
+└── App.jsx               # Main application component
+```
+
+## Component Descriptions
+
+### Pages
+
+- **Home.jsx**: Landing page with algorithm category selection
+- **JobScheduling.jsx**: Main page for job scheduling visualization
+- **About.jsx**: Information about the application
+
+### Components
+
+- **GanttChartComponent.jsx**
+  - Displays the Gantt chart visualization
+  - Shows process execution timeline
+  - Includes context switch visualization
+  - Color-coded process blocks
+
+- **LiveExecutionComponent.jsx**
+  - Real-time display of process execution
+  - Shows current time and process states
+  - Includes pause/resume functionality
+  - Displays process table with status updates
+
+- **ProcessInputForm.jsx**
+  - Form for process input (PID, arrival time, burst time)
+  - Algorithm selection
+  - Time quantum input for Round Robin
+  - Context switch time configuration
+
+- **ResultsComponent.jsx**
+  - Displays final performance metrics
+  - Shows average waiting time
+  - Shows average turnaround time
+  - Detailed process statistics
+
+- **SchedulerControls.jsx**
+  - Controls simulation speed
+  - Speed adjustment slider
+
+### Algorithms
+
+- **scheduling.js**
+  - Implementation of all scheduling algorithms
+  - Step-by-step execution generation
+  - Process state management
+  - Performance calculation
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Technologies Used
+
+- React
+- Vite
+- TailwindCSS
+- Framer Motion
+
+## Future Enhancements
+
+- Memory Allocation visualization
+- Paging algorithms
+- Disk Scheduling algorithms
+- More detailed statistics
+- Export functionality for results
+- Custom process arrival patterns
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
