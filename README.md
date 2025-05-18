@@ -36,9 +36,7 @@ src/
 │   ├── ResultsComponent.jsx       # Performance metrics display
 │   └── SchedulerControls.jsx      # Simulation speed controls
 ├── pages/
-│   ├── Home.jsx           # Main landing page
 │   ├── JobScheduling.jsx  # Job scheduling visualization page
-│   └── About.jsx          # About page
 └── App.jsx               # Main application component
 ```
 
