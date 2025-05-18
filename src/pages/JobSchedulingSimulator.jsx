@@ -116,7 +116,7 @@ const JobSchedulingSimulator = () => {
                 // Set start time when process first starts
                 if (!updated.started) {
                   updated.started = true;
-                  updated.startTime = currentStepRef.current;
+                  updated.startTime = currentStepRef.current-1;
                 }
                 updated.remainingBurstTime -= 1;
 
@@ -141,10 +141,12 @@ const JobSchedulingSimulator = () => {
             const results = prevProcesses.map(p => {
               const turnaroundTime = (p.endTime ?? currentStepRef.current - 1) - p.arrivalTime;
               const waitingTime = Math.max(0, turnaroundTime - p.burstTime);
+              const responseTime = p.startTime === null ? 0 : p.startTime - p.arrivalTime;
               return {
                 ...p,
                 turnaroundTime,
                 waitingTime,
+                responseTime,
                 startTime: p.startTime ?? 'Not Started',
                 endTime: p.endTime ?? 'Not Completed'
               };

@@ -16,7 +16,7 @@ function SchedulerControls({ onSpeedChange }) {
       <input
         type="range"
         min="0.1"
-        max="2"
+        max="5"
         step="0.1"
         value={speed}
         onChange={handleSpeedChange}
