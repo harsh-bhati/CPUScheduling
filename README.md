@@ -42,13 +42,9 @@ src/
 └── App.jsx               # Main application component
 ```
 
-## Component Descriptions
 
 ### Pages
-
-- **Home.jsx**: Landing page with algorithm category selection
 - **JobScheduling.jsx**: Main page for job scheduling visualization
-- **About.jsx**: Information about the application
 
 ### Components
 
@@ -99,7 +95,8 @@ src/
    ```bash
    npm run dev
    ```
-
+4. Open the landingpage.html file. (go live with server)
+5. Now you can use the application.
 ## Technologies Used
 
 - React
